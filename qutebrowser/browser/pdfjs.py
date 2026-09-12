@@ -58,9 +58,9 @@ def generate_pdfjs_page(filename, url):
                             pdfjs_dir=pdfjs_dir)
     html = get_pdfjs_res('web/viewer.html').decode('utf-8')
 
-    script = _generate_pdfjs_script(filename)
+    scripts = _generate_pdfjs_script(filename)
     html = html.replace('</body>',
-                        '</body><script>{}</script>'.format(script))
+                        '</body>' + scripts)
     # WORKAROUND for the fact that PDF.js tries to use the Fetch API even with
     # qute:// URLs, this is probably no longer needed in PDFjs 4+. See #4235
     html = html.replace(
@@ -80,38 +80,18 @@ def _generate_pdfjs_script(filename):
     Args:
         filename: The name of the file to open.
     """
-    url = QUrl('qute://pdfjs/file')
-    url_query = QUrlQuery()
-    url_query.addQueryItem('filename', filename)
-    url.setQuery(url_query)
+    polyfills = _get_polyfills()
 
-    js_url = javascript.to_js(url.toString(urlutils.FormatOption.ENCODED))
+    # Reference the external script with the filename as query parameter
+    qute_js_url = QUrl('qute://pdfjs/qute.js')
+    query = QUrlQuery()
+    query.addQueryItem('filename', filename)
+    qute_js_url.setQuery(query)
 
-    return jinja.js_environment.from_string("""
-        {{ polyfills }}
+    js_url_str = qute_js_url.toString(urlutils.FormatOption.ENCODED)
 
-        document.addEventListener("DOMContentLoaded", function() {
-            if (typeof window.PDFJS !== 'undefined') {
-                // v1.x
-                window.PDFJS.verbosity = window.PDFJS.VERBOSITY_LEVELS.info;
-            } else {
-                // v2.x+
-                const options = window.PDFViewerApplicationOptions;
-                options.set('verbosity', pdfjsLib.VerbosityLevel.INFOS);
-            }
-
-            if (typeof window.PDFView !== 'undefined') {
-                // < v1.6
-                window.PDFView.open({{ url }});
-            } else {
-                // v1.6+
-                window.PDFViewerApplication.open({
-                    url: {{ url }},
-                    originalUrl: {{ url }}
-                });
-            }
-        });
-    """).render(url=js_url, polyfills=_get_polyfills())
+    return ('<script>{}</script>\n'
+            '<script src="{}"></script>').format(polyfills, js_url_str)
 
 
 def get_pdfjs_res_and_path(path):

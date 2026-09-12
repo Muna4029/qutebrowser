@@ -621,7 +621,7 @@ def test_cookies_store(quteproc_new, request, short_tmpdir, store):
     quteproc_new.start(args)
 
     # Set cookie and ensure it's set
-    quteproc_new.open_path('cookies/set-custom?max_age=30', wait=False)
+    quteproc_new.open_path('cookies/set-custom?max_age=300', wait=False)
     quteproc_new.wait_for_load_finished('cookies')
     content = quteproc_new.get_content()
     data = json.loads(content)

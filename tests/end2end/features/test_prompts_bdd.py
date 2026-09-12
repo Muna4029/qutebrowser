@@ -56,7 +56,7 @@ def fresh_instance(quteproc):
         qtutils.version_check("6.8", compiled=False)
         and PYQT_WEBENGINE_VERSION
         and PYQT_WEBENGINE_VERSION < 0x60800
-    ) or qtutils.version_check("6.10", compiled=False, exact=True):
+    ) or qtutils.version_check("6.10", compiled=False):
         quteproc.terminate()
         quteproc.start()
 

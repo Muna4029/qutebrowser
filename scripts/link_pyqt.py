@@ -128,7 +128,11 @@ def link_pyqt(executable, venv_path, *, version):
     if version not in ["5", "6"]:
         raise ValueError(f"Invalid version {version}")
 
-    pyqt_dir = os.path.dirname(get_lib_path(executable, f'PyQt{version}.QtCore'))
+    try:
+        pyqt_dir = os.path.dirname(get_lib_path(executable, f'PyQt{version}.QtCore'))
+    except Error:
+        # PyQt is not installed, nothing to link
+        return
 
     try:
         get_lib_path(executable, f'PyQt{version}.sip')

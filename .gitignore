@@ -55,3 +55,8 @@ TODO
 /misc/nsis/include
 /misc/nsis/plugins
 /wheels
+# Shell redirection artifacts
+=[0-9]*
+>[0-9]*
+*.tmp
+*.log

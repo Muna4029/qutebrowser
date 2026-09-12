@@ -31,4 +31,41 @@ SPDX-License-Identifier: GPL-3.0-or-later
             }
         }
     }
+
+    // Chromium 133 / QtWebEngine 6.10
+    // https://caniuse.com/mdn-javascript_builtins_uint8array_tohex
+    if (typeof Uint8Array.prototype.toHex === "undefined") {
+        Uint8Array.prototype.toHex = function() {
+            let result = "";
+            for (let i = 0; i < this.length; i++) {
+                result += this[i].toString(16).padStart(2, "0");
+            }
+            return result;
+        };
+    }
+
+    // Chromium 133 / QtWebEngine 6.10
+    // https://caniuse.com/mdn-javascript_builtins_map_getorinsert
+    if (typeof Map.prototype.getOrInsert === "undefined") {
+        Map.prototype.getOrInsert = function(key, defaultValue) {
+            if (this.has(key)) {
+                return this.get(key);
+            }
+            this.set(key, defaultValue);
+            return defaultValue;
+        };
+    }
+
+    // Chromium 133 / QtWebEngine 6.10
+    // https://caniuse.com/mdn-javascript_builtins_map_getorinsertcomputed
+    if (typeof Map.prototype.getOrInsertComputed === "undefined") {
+        Map.prototype.getOrInsertComputed = function(key, callback) {
+            if (this.has(key)) {
+                return this.get(key);
+            }
+            const value = callback(key);
+            this.set(key, value);
+            return value;
+        };
+    }
 })();

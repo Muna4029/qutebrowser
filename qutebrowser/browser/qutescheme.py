@@ -543,6 +543,10 @@ def qute_pdfjs(url: QUrl) -> _HandlerRet:
         data = pdfjs.generate_pdfjs_page(filename, url)
         return 'text/html', data
 
+    if url.path() == '/qute.js':
+        data = resources.read_file('javascript/pdfjs_qute.js')
+        return 'text/javascript; charset=utf-8', data
+
     try:
         data = pdfjs.get_pdfjs_res(url.path())
     except pdfjs.PDFJSNotFound as e:

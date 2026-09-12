@@ -41,9 +41,8 @@ def is_ignored_qt_message(pytestconfig, message):
 def is_ignored_lowlevel_message(message):
     """Check if we want to ignore a lowlevel process output."""
     ignored_messages = [
-        # Qt 6.2 / 6.3
-        'Fontconfig error: Cannot load default config file: No such file: (null)',
-        'Fontconfig error: Cannot load default config file',
+        # Qt 6.2 / 6.3 and other Fontconfig variants
+        '*Fontconfig*',
 
         # Qt 6.4, from certificate error below, but on separate lines
         '----- Certificate i=0 (*,CN=localhost,O=qutebrowser test certificate) -----',
