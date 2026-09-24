@@ -656,7 +656,7 @@ class WebEngineVersions:
         utils.VersionNumber(6, 9, 2): (_BASES[130], '139.0.7258.67'),  # 2025-07-29
 
         ## Qt 6.10 (WIP, RC)
-        utils.VersionNumber(6, 10): (_BASES[134], '140.0.7339.133'),  # 2025-09-09
+        utils.VersionNumber(6, 10): (_BASES[134], '140.0.7339.207'),  # 2025-09-09
     }
 
     def __post_init__(self) -> None:

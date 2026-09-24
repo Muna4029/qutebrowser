@@ -7,15 +7,15 @@
 
 """Symlink PyQt into a given virtualenv."""
 
-import os
-import os.path
 import argparse
-import shutil
-import sys
-import subprocess
-import tempfile
 import filecmp
 import json
+import os
+import os.path
+import shutil
+import subprocess
+import sys
+import tempfile
 
 
 class Error(Exception):
@@ -46,7 +46,7 @@ def run_py(executable, *code):
 def verbose_copy(src, dst, *, follow_symlinks=True):
     """Copy function for shutil.copytree which prints copied files."""
     if '-v' in sys.argv:
-        print('{} -> {}'.format(src, dst))
+        print(f'{src} -> {dst}')
     shutil.copy(src, dst, follow_symlinks=follow_symlinks)
 
 
@@ -58,9 +58,7 @@ def get_ignored_files(directory, files):
     for f in files:
         ext = os.path.splitext(f)[1]
         full_path = os.path.join(directory, f)
-        if os.path.isdir(full_path) and f in ignored_dirs:
-            filtered.append(f)
-        elif (ext not in needed_exts) and os.path.isfile(full_path):
+        if os.path.isdir(full_path) and f in ignored_dirs or (ext not in needed_exts) and os.path.isfile(full_path):
             filtered.append(f)
     return filtered
 
@@ -90,18 +88,18 @@ def get_lib_path(executable, name, required=True):
     """
     code = [
         'try:',
-        '    import {}'.format(name),
+        f'    import {name}',
         'except ImportError as e:',
         '    print("ImportError: " + str(e))',
         'else:',
-        '    print("path: " + {}.__file__)'.format(name)
+        f'    print("path: " + {name}.__file__)'
     ]
     output = run_py(executable, *code)
 
     try:
         prefix, data = output.split(': ')
     except ValueError:
-        raise ValueError("Unexpected output: {!r}".format(output))
+        raise ValueError(f"Unexpected output: {output!r}")
 
     if prefix == 'path':
         return data
@@ -114,7 +112,7 @@ def get_lib_path(executable, name, required=True):
             )
         return None
     else:
-        raise ValueError("Unexpected output: {!r}".format(output))
+        raise ValueError(f"Unexpected output: {output!r}")
 
 
 def link_pyqt(executable, venv_path, *, version):
@@ -161,14 +159,14 @@ def copy_or_link(source, dest):
     """Copy or symlink source to dest."""
     if os.name == 'nt':
         if os.path.isdir(source):
-            print('{} -> {}'.format(source, dest))
+            print(f'{source} -> {dest}')
             shutil.copytree(source, dest, ignore=get_ignored_files,
                             copy_function=verbose_copy)
         else:
-            print('{} -> {}'.format(source, dest))
+            print(f'{source} -> {dest}')
             shutil.copy(source, dest)
     else:
-        print('{} -> {}'.format(source, dest))
+        print(f'{source} -> {dest}')
         os.symlink(source, dest)
 
 

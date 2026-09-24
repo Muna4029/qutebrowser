@@ -440,6 +440,7 @@ KEYS = [
     Key('LaunchH', 'Launch (H)', qtest=False),
     Key('MonBrightnessUp', 'Monitor Brightness Up', qtest=False),
     Key('MonBrightnessDown', 'Monitor Brightness Down', qtest=False),
+    Key('Keyboard', 'Keyboard', qtest=False),
     Key('KeyboardLightOnOff', 'Keyboard Light On/Off', qtest=False),
     Key('KeyboardBrightnessUp', 'Keyboard Brightness Up', qtest=False),
     Key('KeyboardBrightnessDown', 'Keyboard Brightness Down', qtest=False),

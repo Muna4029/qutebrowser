@@ -361,3 +361,20 @@ def test_set(quteproc, value):
 ])
 def test_is_ignored_chromium_message(message, ignored):
     assert quteprocess.is_ignored_chromium_message(message) == ignored
+
+
+@pytest.mark.parametrize('message, ignored', [
+    # Fontconfig errors - broadened patterns
+    ('Fontconfig error: Cannot load default config file', True),
+    ('Fontconfig error: Cannot load default config file: No such file: (null)', True),
+    ('Fontconfig error: Some other fontconfig error', True),
+    ('No such file: (null)', True),
+    ('Some error: No such file: (null)', True),
+    ('File not found', True),
+    ('Error: File not found', True),
+    # Not ignored
+    ('Hello World', False),
+    ('Some random error', False),
+])
+def test_is_ignored_lowlevel_message(message, ignored):
+    assert quteprocess.is_ignored_lowlevel_message(message) == ignored

@@ -41,9 +41,10 @@ def is_ignored_qt_message(pytestconfig, message):
 def is_ignored_lowlevel_message(message):
     """Check if we want to ignore a lowlevel process output."""
     ignored_messages = [
-        # Qt 6.2 / 6.3
-        'Fontconfig error: Cannot load default config file: No such file: (null)',
-        'Fontconfig error: Cannot load default config file',
+        # Qt 6.2 / 6.3 - broadened to match variants
+        'Fontconfig error*',
+        '*No such file*',
+        '*File not found*',
 
         # Qt 6.4, from certificate error below, but on separate lines
         '----- Certificate i=0 (*,CN=localhost,O=qutebrowser test certificate) -----',
@@ -249,6 +250,10 @@ def is_ignored_chromium_message(line):
         # Qt 6.9 Beta 3 on GitHub Actions
         # [978:1041:0311/070551.759339:ERROR:bus.cc(407)]
         "Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory",
+
+        # QtWebEngine/Chromium D-Bus stderr noise
+        "*Failed to connect to the bus*",
+        "*D-Bus*",
 
         # Qt 6.9 on GitHub Actions with Windows Server 2025
         # [4348:7828:0605/123815.402:ERROR:shared_image_manager.cc(356)]
