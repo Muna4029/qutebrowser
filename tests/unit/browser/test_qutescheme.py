@@ -268,6 +268,17 @@ class TestPDFJSHandler:
         with pytest.raises(qutescheme.UrlInvalidError):
             qutescheme.data_for_url(QUrl('qute://pdfjs/file'))
 
+    def test_integration_script(self):
+        mimetype, data = qutescheme.data_for_url(
+            QUrl('qute://pdfjs/qute.js?filename=testfile'))
+
+        assert mimetype == 'application/javascript'
+        assert b'qute://pdfjs/file?filename=testfile' in data
+
+    def test_integration_script_no_filename(self):
+        with pytest.raises(qutescheme.UrlInvalidError):
+            qutescheme.data_for_url(QUrl('qute://pdfjs/qute.js'))
+
     @pytest.mark.parametrize('sep', ['/', os.sep])
     def test_file_pathsep(self, sep):
         url = QUrl('qute://pdfjs/file')

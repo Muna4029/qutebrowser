@@ -58,39 +58,41 @@ def generate_pdfjs_page(filename, url):
                             pdfjs_dir=pdfjs_dir)
     html = get_pdfjs_res('web/viewer.html').decode('utf-8')
 
-    script = _generate_pdfjs_script(filename)
-    html = html.replace('</body>',
-                        '</body><script>{}</script>'.format(script))
-    # WORKAROUND for the fact that PDF.js tries to use the Fetch API even with
-    # qute:// URLs, this is probably no longer needed in PDFjs 4+. See #4235
-    html = html.replace(
-        '<head>',
-        '<head>\n<script>window.Response = undefined;</script>\n'
-    )
-    return html
+    script_url = _get_pdfjs_url('qute.js', filename)
+    return html.replace(
+        '</body>', f'</body><script src="{script_url}"></script>')
 
 
 def _get_polyfills() -> str:
     return resources.read_file("javascript/pdfjs_polyfills.js")
 
 
-def _generate_pdfjs_script(filename):
+def generate_pdfjs_script(filename):
     """Generate the script that shows the pdf with pdf.js.
 
     Args:
         filename: The name of the file to open.
     """
-    url = QUrl('qute://pdfjs/file')
-    url_query = QUrlQuery()
-    url_query.addQueryItem('filename', filename)
-    url.setQuery(url_query)
-
-    js_url = javascript.to_js(url.toString(urlutils.FormatOption.ENCODED))
+    js_url = javascript.to_js(_get_pdfjs_url('file', filename))
 
     return jinja.js_environment.from_string("""
         {{ polyfills }}
 
-        document.addEventListener("DOMContentLoaded", function() {
+        let opening = false;
+
+        async function openPdf() {
+            if (opening || (
+                typeof window.PDFView === 'undefined' &&
+                typeof window.PDFViewerApplication === 'undefined'
+            )) {
+                return;
+            }
+            opening = true;
+
+            if (window.PDFViewerApplication?.initializedPromise) {
+                await window.PDFViewerApplication.initializedPromise;
+            }
+
             if (typeof window.PDFJS !== 'undefined') {
                 // v1.x
                 window.PDFJS.verbosity = window.PDFJS.VERBOSITY_LEVELS.info;
@@ -110,8 +112,23 @@ def _generate_pdfjs_script(filename):
                     originalUrl: {{ url }}
                 });
             }
-        });
+        }
+
+        // PDF.js 6 initializes asynchronously after dispatching
+        // webviewerloaded. Waiting for initializedPromise avoids trying to
+        // open the document before the viewer components exist.
+        document.addEventListener("webviewerloaded", openPdf, { once: true });
+        document.addEventListener("DOMContentLoaded", openPdf, { once: true });
     """).render(url=js_url, polyfills=_get_polyfills())
+
+
+def _get_pdfjs_url(path: str, filename: str) -> str:
+    """Get an encoded qute://pdfjs URL for a temporary PDF file."""
+    url = QUrl(f'qute://pdfjs/{path}')
+    url_query = QUrlQuery()
+    url_query.addQueryItem('filename', filename)
+    url.setQuery(url_query)
+    return url.toString(urlutils.FormatOption.ENCODED)
 
 
 def get_pdfjs_res_and_path(path):

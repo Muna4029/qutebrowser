@@ -514,12 +514,16 @@ def qute_pdfjs(url: QUrl) -> _HandlerRet:
     Return the pdf.js viewer or redirect to original URL if the file does not
     exist.
     """
-    if url.path() == '/file':
+    if url.path() in {'/file', '/qute.js'}:
         filename = QUrlQuery(url).queryItemValue('filename')
         if not filename:
             raise UrlInvalidError("Missing filename")
         if '/' in filename or os.sep in filename:
             raise RequestDeniedError("Path separator in filename.")
+
+        if url.path() == '/qute.js':
+            script = pdfjs.generate_pdfjs_script(filename).encode('utf-8')
+            return 'application/javascript', script
 
         path = _pdf_path(filename)
         with open(path, 'rb') as f:

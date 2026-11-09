@@ -38,6 +38,11 @@ def test_generate_pdfjs_page(available, snippet, monkeypatch):
     content = pdfjs.generate_pdfjs_page('example.pdf', QUrl())
     print(content)
     assert snippet in content
+    if available is True:
+        assert (
+            '<script src="qute://pdfjs/qute.js?filename=example.pdf">'
+            in content
+        )
 
 
 # Note that we got double protection, once because we use QUrl.ComponentFormattingOption.FullyEncoded and
@@ -52,9 +57,11 @@ def test_generate_pdfjs_page(available, snippet, monkeypatch):
 ])
 def test_generate_pdfjs_script(filename, expected):
     expected_open = 'open("qute://pdfjs/file?filename={}");'.format(expected)
-    actual = pdfjs._generate_pdfjs_script(filename)
+    actual = pdfjs.generate_pdfjs_script(filename)
     assert expected_open in actual
     assert 'PDFView' in actual
+    assert 'webviewerloaded' in actual
+    assert 'initializedPromise' in actual
 
 
 class TestResources:
