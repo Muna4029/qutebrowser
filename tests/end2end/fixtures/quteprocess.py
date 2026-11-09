@@ -43,7 +43,7 @@ def is_ignored_lowlevel_message(message):
     ignored_messages = [
         # Qt 6.2 / 6.3
         'Fontconfig error: Cannot load default config file: No such file: (null)',
-        'Fontconfig error: Cannot load default config file',
+        'Fontconfig error: Cannot load default config file*',
 
         # Qt 6.4, from certificate error below, but on separate lines
         '----- Certificate i=0 (*,CN=localhost,O=qutebrowser test certificate) -----',
@@ -96,7 +96,7 @@ def is_ignored_chromium_message(line):
         (\d+:\d+:)?  # Process/Thread ID
         \d{4}/[\d.]+:  # MMDD/Time
         (?P<loglevel>[A-Z]+):  # Log level
-        [^ :]+    # filename / line
+        [^ ]+    # filename / line
         \]
         \ (?P<message>.*)  # message
     """, re.VERBOSE)
@@ -257,6 +257,14 @@ def is_ignored_chromium_message(line):
         # Qt 6.10 debug build
         # "[453900:453973:0909/000324.265214:WARNING:viz_main_impl.cc(85)]"
         "VizNullHypothesis is disabled (not a warning)",
+
+        # Qt 6.10 on Windows + GitHub Actions
+        # [3508:6056:1103/172403.602:ERROR:cache_util_win.cc(20)]
+        "Unable to move the cache: The system cannot find the file specified. (0x2)",
+        # [3508:5516:1103/172403.608:ERROR:disk_cache.cc(216)]
+        "Unable to create cache",
+        # [3508:5516:1103/172403.608:ERROR:gpu_disk_cache.cc(711)]
+        "Gpu Cache Creation failed: -2",
     ]
     return any(testutils.pattern_match(pattern=pattern, value=message)
                for pattern in ignored_messages)

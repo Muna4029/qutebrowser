@@ -40,6 +40,23 @@ def test_generate_pdfjs_page(available, snippet, monkeypatch):
     assert snippet in content
 
 
+def test_generate_pdfjs_page_csp(monkeypatch):
+    viewer = b"""<!doctype html>
+        <meta http-equiv="Content-Security-Policy"
+              content="default-src 'none'; script-src 'self'">
+        <body></body>
+    """
+    monkeypatch.setattr(pdfjs, 'is_available', lambda: True)
+    monkeypatch.setattr(pdfjs, 'get_pdfjs_res', lambda _path: viewer)
+    monkeypatch.setattr(pdfjs.secrets, 'token_urlsafe', lambda: 'test-nonce')
+
+    content = pdfjs.generate_pdfjs_page('example.pdf', QUrl())
+
+    assert "script-src 'self' 'nonce-test-nonce'" in content
+    assert '<script nonce="test-nonce">' in content
+    assert 'window.Response = undefined' not in content
+
+
 # Note that we got double protection, once because we use QUrl.ComponentFormattingOption.FullyEncoded and
 # because we use qutebrowser.utils.javascript.to_js. Characters like " are
 # already replaced by QUrl.

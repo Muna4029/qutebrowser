@@ -508,7 +508,6 @@ def should_be_logged(quteproc, server, is_regex, pattern, loglevel):
     }
     if loglevel:
         args['loglevel'] = getattr(logging, loglevel.upper())
-
     line = quteproc.wait_for(**args)
     line.expected = True
 
