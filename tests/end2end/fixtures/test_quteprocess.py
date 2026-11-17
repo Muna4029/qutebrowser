@@ -72,6 +72,20 @@ class FakeRequest:
         return self._server
 
 
+@pytest.mark.parametrize('message', [
+    'Fontconfig error: Cannot load default config file',
+    'Fontconfig error: Cannot load default config file: No such file: (null)',
+    'Fontconfig error: Cannot load default config file: File not found',
+])
+def test_ignored_fontconfig_message(message):
+    assert quteprocess.is_ignored_lowlevel_message(message)
+
+
+def test_unrelated_fontconfig_message_not_ignored():
+    assert not quteprocess.is_ignored_lowlevel_message(
+        'Fontconfig error: Failed to load a configured font')
+
+
 @pytest.fixture
 def request_mock(quteproc, monkeypatch, server):
     """Patch out a pytest request."""
@@ -356,6 +370,8 @@ def test_set(quteproc, value):
     ('[0509/185222.442798:ERROR:ssl_client_socket_impl.cc(959)] handshake failed; returned -1, SSL error code 1, net_error -202', True),
     # Random ignored message
     ('[503633:503650:0509/185222.442798:ERROR:ssl_client_socket_impl.cc(959)] handshake failed; returned -1, SSL error code 1, net_error -202', True),
+    # Chromium 140+ uses filename.cc:line instead of filename.cc(line).
+    ('[503633:503650:0509/185222.442798:ERROR:ssl_client_socket_impl.cc:959] handshake failed; returned -1, SSL error code 1, net_error -202', True),
     # Not ignored
     ('[26598:26598:0605/191429.639416:WARNING:audio_manager.cc(317)] Test', False),
 ])
