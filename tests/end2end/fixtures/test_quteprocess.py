@@ -72,6 +72,20 @@ class FakeRequest:
         return self._server
 
 
+@pytest.mark.parametrize('message', [
+    'Fontconfig error: Cannot load default config file',
+    'Fontconfig error: Cannot load default config file: No such file: (null)',
+    'Fontconfig error: Cannot load default config file: File not found',
+])
+def test_ignored_fontconfig_message(message):
+    assert quteprocess.is_ignored_lowlevel_message(message)
+
+
+def test_unrelated_fontconfig_message_not_ignored():
+    assert not quteprocess.is_ignored_lowlevel_message(
+        'Fontconfig error: Failed to load a configured font')
+
+
 @pytest.fixture
 def request_mock(quteproc, monkeypatch, server):
     """Patch out a pytest request."""
@@ -356,6 +370,17 @@ def test_set(quteproc, value):
     ('[0509/185222.442798:ERROR:ssl_client_socket_impl.cc(959)] handshake failed; returned -1, SSL error code 1, net_error -202', True),
     # Random ignored message
     ('[503633:503650:0509/185222.442798:ERROR:ssl_client_socket_impl.cc(959)] handshake failed; returned -1, SSL error code 1, net_error -202', True),
+    # Newer Chromium versions use a colon before the source line number
+    ('[1388:3428:0814/030532.202:ERROR:../../../qtwebengine/src/3rdparty/'
+     'chromium/dbus/bus.cc:408] Failed to connect to the bus: Failed to connect '
+     'to socket /run/dbus/system_bus_socket: No such file or directory', True),
+    # Qt 6.10+ on Windows CI during cache cleanup
+    ('[1388:3428:0814/030532.202:ERROR:cache_util_win.cc(20)] Unable to move '
+     'the cache: The system cannot find the file specified. (0x2)', True),
+    ('[1388:8780:0814/030532.204:ERROR:disk_cache.cc(208)] Unable to create '
+     'cache', True),
+    ('[1388:8780:0814/030532.204:ERROR:gpu_disk_cache.cc(713)] Gpu Cache '
+     'Creation failed: -2', True),
     # Not ignored
     ('[26598:26598:0605/191429.639416:WARNING:audio_manager.cc(317)] Test', False),
 ])

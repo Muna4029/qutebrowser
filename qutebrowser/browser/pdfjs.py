@@ -6,6 +6,7 @@
 """pdf.js integration for qutebrowser."""
 
 import os
+import secrets
 
 from qutebrowser.qt.core import QUrl, QUrlQuery
 
@@ -59,13 +60,14 @@ def generate_pdfjs_page(filename, url):
     html = get_pdfjs_res('web/viewer.html').decode('utf-8')
 
     script = _generate_pdfjs_script(filename)
-    html = html.replace('</body>',
-                        '</body><script>{}</script>'.format(script))
-    # WORKAROUND for the fact that PDF.js tries to use the Fetch API even with
-    # qute:// URLs, this is probably no longer needed in PDFjs 4+. See #4235
+    nonce = secrets.token_urlsafe()
     html = html.replace(
-        '<head>',
-        '<head>\n<script>window.Response = undefined;</script>\n'
+        "script-src 'self'",
+        f"script-src 'self' 'nonce-{nonce}'",
+    )
+    html = html.replace(
+        '</body>',
+        f'</body><script nonce="{nonce}">{script}</script>',
     )
     return html
 
