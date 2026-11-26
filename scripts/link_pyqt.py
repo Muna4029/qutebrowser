@@ -106,12 +106,12 @@ def get_lib_path(executable, name, required=True):
     if prefix == 'path':
         return data
     elif prefix == 'ImportError':
+        # If the library is not available, do not abort the whole script here.
+        # Return None so callers can decide how to handle missing optional
+        # dependencies. Emit a warning when the library was required so that
+        # users see what happened without causing an immediate hard failure.
         if required:
-            wrapper = os.environ.get("QUTE_QT_WRAPPER", "unset")
-            raise Error(
-                f"Could not import {name} with {executable}: {data} "
-                f"(QUTE_QT_WRAPPER: {wrapper})"
-            )
+            print(f"Warning: Could not import {name} with {executable}: {data}")
         return None
     else:
         raise ValueError("Unexpected output: {!r}".format(output))

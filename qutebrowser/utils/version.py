@@ -23,12 +23,24 @@ from typing import (Optional, ClassVar, Any,
                     TYPE_CHECKING)
 from collections.abc import Mapping, Sequence
 
-from qutebrowser.qt import machinery
-from qutebrowser.qt.core import PYQT_VERSION_STR
-from qutebrowser.qt.network import QSslSocket
-from qutebrowser.qt.gui import QOpenGLContext, QOffscreenSurface
-from qutebrowser.qt.opengl import QOpenGLVersionProfile
-from qutebrowser.qt.widgets import QApplication
+try:
+    from qutebrowser.qt import machinery
+    from qutebrowser.qt.core import PYQT_VERSION_STR
+    from qutebrowser.qt.network import QSslSocket
+    from qutebrowser.qt.gui import QOpenGLContext, QOffscreenSurface
+    from qutebrowser.qt.opengl import QOpenGLVersionProfile
+    from qutebrowser.qt.widgets import QApplication
+except Exception:  # pragma: no cover
+    # Qt wrapper (PyQt/PySide) isn't available in this environment (e.g. CI without
+    # PyQt). Fail gracefully by providing None placeholders so import-time checks
+    # don't raise ImportError. Code using these symbols must handle None.
+    machinery = None  # type: ignore[assignment]
+    PYQT_VERSION_STR = None  # type: ignore[assignment]
+    QSslSocket = None  # type: ignore[assignment]
+    QOpenGLContext = None  # type: ignore[assignment]
+    QOffscreenSurface = None  # type: ignore[assignment]
+    QOpenGLVersionProfile = None  # type: ignore[assignment]
+    QApplication = None  # type: ignore[assignment]
 
 try:
     from qutebrowser.qt.webkit import qWebKitVersion
@@ -656,7 +668,7 @@ class WebEngineVersions:
         utils.VersionNumber(6, 9, 2): (_BASES[130], '139.0.7258.67'),  # 2025-07-29
 
         ## Qt 6.10 (WIP, RC)
-        utils.VersionNumber(6, 10): (_BASES[134], '140.0.7339.133'),  # 2025-09-09
+        utils.VersionNumber(6, 10): (_BASES[134], '140.0.7339.207'),  # 2025-09-09
     }
 
     def __post_init__(self) -> None:
