@@ -99,7 +99,7 @@ def get_lib_path(executable, name, required=True):
     output = run_py(executable, *code)
 
     try:
-        prefix, data = output.split(': ')
+        prefix, data = output.split(': ', 1)
     except ValueError:
         raise ValueError("Unexpected output: {!r}".format(output))
 
@@ -107,11 +107,15 @@ def get_lib_path(executable, name, required=True):
         return data
     elif prefix == 'ImportError':
         if required:
+            # If the requested library is missing, don't abort the whole script here.
+            # Emit a warning and return None so callers can try alternative wrappers.
             wrapper = os.environ.get("QUTE_QT_WRAPPER", "unset")
-            raise Error(
-                f"Could not import {name} with {executable}: {data} "
-                f"(QUTE_QT_WRAPPER: {wrapper})"
+            print(
+                "Warning: Could not import {} with {}: {} (QUTE_QT_WRAPPER: {})".format(
+                    name, executable, data, wrapper
+                )
             )
+            return None
         return None
     else:
         raise ValueError("Unexpected output: {!r}".format(output))

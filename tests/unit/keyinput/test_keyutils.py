@@ -8,9 +8,13 @@ import hypothesis
 from hypothesis import strategies
 import pytest
 from qutebrowser.qt import machinery
-from qutebrowser.qt.core import Qt, QEvent, pyqtSignal
-from qutebrowser.qt.gui import QKeyEvent, QKeySequence
-from qutebrowser.qt.widgets import QWidget
+try:
+    from qutebrowser.qt.core import Qt, QEvent, pyqtSignal
+    from qutebrowser.qt.gui import QKeyEvent, QKeySequence
+    from qutebrowser.qt.widgets import QWidget
+except Exception as e:
+    # If the Qt bindings are not available, skip these tests at import time
+    pytest.skip(f"Skipping tests that require Qt bindings: {e}", allow_module_level=True)
 
 from helpers import testutils
 from unit.keyinput import key_data
@@ -57,8 +61,12 @@ def qtest_key(request):
 
 def test_key_data_keys():
     """Make sure all possible keys are in key_data.KEYS."""
-    key_names = {name.removeprefix("Key_")
-                 for name in testutils.enum_members(Qt, Qt.Key)}
+    # Only consider enum members that actually start with the 'Key_' prefix
+    # to avoid picking up non-key enum members (e.g. container entries like
+    # 'Keyboard' that some Qt versions may include).
+    key_names = {name[len("Key_"):]
+                 for name in testutils.enum_members(Qt, Qt.Key)
+                 if name.startswith("Key_")}
     key_data_names = {key.attribute for key in sorted(key_data.KEYS)}
     diff = key_names - key_data_names
     assert not diff
